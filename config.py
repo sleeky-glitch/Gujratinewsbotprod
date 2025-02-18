@@ -14,7 +14,7 @@ class Config:
     GITHUB_BRANCH = "main"
 
     # File Pattern
-    NEWS_FILE_PATTERN = "dd_news_page_*.txt"
+    NEWS_FILE_PATTERN = "dd_news_"
 
     # Cache Settings
     CACHE_TTL = 3600  # 1 hour
