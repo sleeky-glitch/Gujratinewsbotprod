@@ -1,14 +1,14 @@
 import base64
 from github import Github
-from typing import List, Dict
 import streamlit as st
 from config import Config
 import requests
+from typing import List, Dict
 
 @st.cache_data(ttl=3600)
-def get_github_files() -> List[Dict]:
+def get_github_file_contents() -> List[Dict]:
     """
-    Fetch all news text files from GitHub repository
+    Fetch all news text files and their contents from GitHub repository
     """
     try:
         # Initialize GitHub client with access token
@@ -26,30 +26,17 @@ def get_github_files() -> List[Dict]:
             if file_content.type == "dir":
                 contents.extend(repo.get_contents(file_content.path))
             elif file_content.name.startswith("dd_news_page_") and file_content.name.endswith(".txt"):
+                # Get the raw content directly
+                raw_content = base64.b64decode(file_content.content).decode('utf-8')
                 news_files.append({
                     "name": file_content.name,
-                    "path": file_content.path,
-                    "download_url": file_content.download_url,
-                    "sha": file_content.sha
+                    "content": raw_content
                 })
 
         return news_files
     except Exception as e:
         st.error(f"Error accessing GitHub repository: {str(e)}")
         return []
-
-@st.cache_data(ttl=3600)
-def get_file_content(file_url: str) -> str:
-    """
-    Fetch content of a file from GitHub
-    """
-    try:
-        response = requests.get(file_url)
-        response.raise_for_status()
-        return response.text
-    except Exception as e:
-        st.error(f"Error fetching file content: {str(e)}")
-        return ""
 
 def get_repo_stats() -> Dict:
     """
@@ -63,7 +50,7 @@ def get_repo_stats() -> Dict:
             "stars": repo.stargazers_count,
             "forks": repo.forks_count,
             "last_updated": repo.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "total_files": len(get_github_files())
+            "total_files": len(get_github_file_contents())
         }
     except Exception as e:
         st.error(f"Error fetching repository stats: {str(e)}")
