@@ -8,12 +8,12 @@ import re
 
 from config import Config
 from utils import (
-    parse_article, parse_mixtral_response, validate_date, 
+    parse_article, parse_mixtral_response, validate_date,
     format_search_results, create_custom_css
 )
-from github_utils import get_github_files, get_file_content, get_repo_stats
+from github_utils import get_github_file_contents, get_repo_stats
 from translate_utils import (
-    translate_text, detect_language, highlight_matching_text, 
+    translate_text, detect_language, highlight_matching_text,
     get_color_legend
 )
 
@@ -55,11 +55,6 @@ def translate_query_and_extract(query: str, source_lang: str) -> tuple[List[str]
     Please format your response exactly as follows:
     Tags: [list of tags]
     Date: date in DD-MM-YYYY format (if mentioned)
-
-    For example:
-    Query: "cricket matches in gujarat last week"
-    Tags: [cricket, matches, gujarat]
-    Date: {(datetime.now()).strftime('%d-%m-%Y')}
     """
 
     response = query_mixtral(prompt)
@@ -70,12 +65,12 @@ def translate_query_and_extract(query: str, source_lang: str) -> tuple[List[str]
 def search_articles(tags: List[str], date: Optional[str] = None) -> List[Dict]:
     """Search for articles based on tags and date"""
     results = []
-    files = get_github_files()
+    files = get_github_file_contents()
 
     for file in files:
         try:
-            content = get_file_content(file['download_url'])
-            
+            content = file['content']
+
             # Create all possible combinations of tags
             all_combinations = []
             for r in range(1, len(tags) + 1):
@@ -92,7 +87,7 @@ def search_articles(tags: List[str], date: Optional[str] = None) -> List[Dict]:
                 article_date_match = re.search(r"Date:\s*(\d{2}-\d{2}-\d{4})", content)
                 if article_date_match:
                     article_date = datetime.strptime(article_date_match.group(1), "%d-%m-%Y")
-                    
+
                     if date and validate_date(date):
                         query_date = datetime.strptime(date, "%d-%m-%Y")
                         if article_date >= query_date:
