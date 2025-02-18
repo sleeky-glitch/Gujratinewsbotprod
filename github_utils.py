@@ -25,7 +25,7 @@ def get_github_files() -> List[Dict]:
             file_content = contents.pop(0)
             if file_content.type == "dir":
                 contents.extend(repo.get_contents(file_content.path))
-            elif file_content.name.startswith("dd_news_pahe_") and file_content.name.endswith(".txt"):
+            elif file_content.name.startswith("dd_news_page_") and file_content.name.endswith(".txt"):
                 news_files.append({
                     "name": file_content.name,
                     "path": file_content.path,
